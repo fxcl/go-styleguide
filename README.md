@@ -742,4 +742,574 @@ func someOtherHelper() string {
 
 ## 使用 `io.WriteString`
 
-满足 `io.Writer` 的一些重要类型也有一个 `WriteString` 方法，包括 `*bytes.Buffer`、`*os.File` 和 `*bufio.Writer`。`WriteString` 是与期望
+满足 `io.Writer` 的一些重要类型也有一个 `WriteString` 方法，包括 `*bytes.Buffer`、`*os.File` 和 `*bufio.Writer`。`WriteString` 是与期望写字符串到缓冲区中的方法，可以提高性能，并确保字符串将以任何方式被写入。
+
+**Don't:**
+go
+复制
+
+var w io.Writer = new(bytes.Buffer)
+str := "some string"
+w.Write([]byte(str))
+
+
+**Do:**
+go
+复制
+
+var w io.Writer = new(bytes.Buffer)
+str := "some string"
+io.WriteString(w, str)
+
+
+在任何情况下，`io.WriteString` 都可以改善性能，并且至少可以确保以任何方式写入字符串。
+
+## 使用函数选项
+
+go
+复制
+
+func main() {
+	// ...
+	startServer(
+		WithPort(8080),
+		WithTimeout(1 * time.Second),
+	)
+}
+
+type Config struct {
+	port    int
+	timeout time.Duration
+}
+
+type ServerOpt func(*Config)
+
+func WithPort(port int) ServerOpt {
+	return func(cfg *Config) {
+		cfg.port = port
+	}
+}
+
+func WithTimeout(timeout time.Duration) ServerOpt {
+	return func(cfg *Config) {
+		cfg.timeout = timeout
+	}
+}
+
+func startServer(opts ...ServerOpt) {
+	cfg := new(Config)
+	for _, fn := range opts {
+		fn(cfg)
+	}
+
+	// ...
+}
+
+
+## 结构体
+### 使用命名结构体
+如果一个结构体有多个字段，实例化时包含字段名称。
+
+**Don't:**
+go
+复制
+
+params := myStruct{
+	1,
+	true,
+}
+
+
+**Do:**
+go
+复制
+
+params := myStruct{
+	Foo: 1,
+	Bar: true,
+}
+
+
+### 避免 new 关键字
+使用正常的语法而不是 `new` 关键字可以更清楚地表达正在发生的事情：创建结构体的新实例 `MyStruct{}` 并使用 `&` 获取指针。
+
+**Don't:**
+go
+复制
+
+s := new(MyStruct)
+
+
+**Do:**
+go
+复制
+
+s := &MyStruct{}
+
+
+### 一致的头部命名
+
+**Don't:**
+go
+复制
+
+r.Header.Get("authorization")
+w.Header.Set("Content-type")
+w.Header.Set("content-type")
+w.Header.Set("content-Type")
+
+
+**Do:**
+go
+复制
+
+r.Header.Get("Authorization")
+w.Header.Set("Content-Type")
+
+
+保持头部命名的一致性有助于代码的可读性和一致性。
+
+### 避免魔法数字
+
+没有名称和上下文的数字只是一个随机值。在代码中避免使用它们（例外情况可能是数字0，例如在创建循环时）。
+
+**Don't:**
+go
+复制
+
+func IsStrongPassword(password string) bool {
+	return len(password) >= 8
+}
+
+
+**Do:**
+go
+复制
+
+const minPasswordLength = 8
+
+func IsStrongPassword(password string) bool {
+	return len(password) >= minPasswordLength
+}
+# 使用指导方针
+
+## 撰写文档
+
+**不要：
+go
+复制
+
+// Add adds two numbers.
+func Add(a, b int) int {
+	return a + b
+}
+
+
+**Do:**
+go
+复制
+
+// Add adds two numbers and returns the result.
+func Add(a, b int) int {
+	return a + b
+}
+
+
+为函数、方法和类型编写有意义的注释，解释其功能和预期行为。
+
+## 处理错误
+
+**Don't:**
+go
+复制
+
+func ReadFile(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+
+**Do:**
+go
+复制
+
+func ReadFile(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	return data, nil
+}
+
+
+使用 `fmt.Errorf` 函数将错误与自定义消息结合，以提供更多上下文信息。
+
+## 并发安全
+
+**Don't:**
+go
+复制
+
+type Counter struct {
+	count int
+	mu    sync.Mutex
+}
+
+func (c *Counter) Increment() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.count++
+}
+
+func (c *Counter) Count() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.count
+}
+
+
+**Do:**
+go
+复制
+
+type Counter struct {
+	count int
+	mu    sync.Mutex
+}
+
+func (c *Counter) Increment() {
+	c.mu.Lock()
+	c.count++
+	c.mu.Unlock()
+}
+
+func (c *Counter) Count() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.count
+}
+
+
+在并发调用时，使用互斥锁（Mutex）来保护共享数据的访问。
+
+## 错误类型
+
+**Don't:**
+go
+复制
+
+var ErrNotFound = errors.New("not found")
+
+func GetUser(id int) (*User, error) {
+	user, err := db.GetUserByID(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+
+**Do:**
+go
+复制
+
+var (
+	ErrNotFound = errors.New("not found")
+)
+
+func GetUser(id int) (*User, error) {
+	user, err := db.GetUserByID(id)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
+}
+
+
+定义应用程序自己的错误类型，以便可以根据错误类型采取相应的操作或进行特定的错误处理。
+
+## 文件和目录路径
+
+**Don't:**
+go
+复制
+
+func WriteToFile(data []byte) error {
+	file, err := os.Create("/path/to/file")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(data)
+	return err
+}
+
+
+**Do:**
+go
+复制
+
+func WriteToFile(data []byte) error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	filePath := filepath.Join(homeDir, "path", "to", "file")
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.Write(data)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	return nil
+}
+
+
+使用 `filepath.Join` 来构建具有可移植性的文件路径，避免在不同操作系统上使用硬编码的路径。
+
+## 日志记录
+
+**Don't:**
+go
+复制
+
+func DoSomething() error {
+	log.Println("doing something")
+	// do something
+	return nil
+}
+
+
+**Do:**
+go
+复制
+
+var logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+func DoSomething() error {
+	logger.Println("doing something")
+	// do something
+	return nil
+}
+
+
+在整个应用程序中使用单个 logger 对象，并将其传递给需要记录日志的函数。
+
+## 变量赋值
+
+**Don't:**
+go
+复制
+
+var a = 1
+var b = true
+var c = "hello"
+
+
+**Do:**
+go
+复制
+
+var (
+	a = 1
+	b = true
+	c = "hello"
+)
+
+
+将变量的声明和赋值组合在一起，并声明自定义的声明块以提高可读性。
+
+## 重命名包导入
+
+**Don't:**
+go
+复制
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+
+**Do:**
+go
+复制
+
+import (
+	"fmt"
+	"os"
+	stdtime "time"
+)
+
+
+重命名导入的包，以避免名称冲突或增加代码的可读性。
+
+## 错误处理
+
+**Don't:**
+go
+复制
+
+func OpenFile(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	// do something with file
+	return nil
+}
+
+
+**Do:**
+go
+复制
+
+func OpenFile(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("failed to open file (%s): %w", filename, err)
+	}
+	defer file.Close()
+	// do something with file
+	return nil
+}
+
+
+在处理错误时，始终使用 `fmt.Errorf` 来返回带有上下文信息的错误。
+
+## 延迟函数调用与错误
+
+**Don't:**
+go
+复制
+
+func Foo() (err error) {
+	defer func() {
+		if err != nil {
+			return
+		}
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic: %v", r)
+		}
+	}()
+	// do something
+	return
+}
+
+
+**Do:**
+go
+复制
+
+func Foo() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered panic: %v", r)
+		}
+	}()
+	// do something
+	return
+}
+
+
+仅使用 `recover()` 在解决错误时设置错误变量。不要在延迟函数中使用 `return`，以避免 possible bugs。
+
+## 函数返回值的命名
+
+**Don't:**
+go
+复制
+
+func Calculate(a, b int) (int, error) {
+	// calculate result
+	return result, nil
+}
+
+
+**Do:**
+go
+复制
+
+func Calculate(a, b int) (result int, err error) {
+	// calculate result
+	return result nil
+}
+
+
+为函数的返回值命名，以提高代码的可读性和可理解性。
+
+## 使用 context 包
+
+对于需要在多个 goroutine 之间进行协调的函数，使用 `context` 包来传递取消信号和截止时间。
+
+## 测试的最佳实践
+
+- 使用表驱动测试来处理不同的测试案例。
+- 为每个功能测试编写专门的子测试。
+- 使用断言库来提供更好的错误消息。
+- 使用测试覆盖率工具来确保测试覆盖了代码的所有路径。
+
+## 注释与代码同步
+
+**Don't:**
+go
+复制
+
+// Add adds two numbers.
+func Add(a, b int) int {
+	return a + b
+}
+
+
+**Do:**
+go
+复制
+
+// Add adds two numbers and returns the result.
+func Add(a, b int) int {
+	return a + b
+}
+
+
+确保注释与代码保持同步，并提供准确的文档和注释。及时更新注释，以反映代码的更改。
+
+## 参考
+
+- [Uber Go 语言编码规范](https://github.com/uber-go/guide/blob/master/style.md)
+- [Go 代码审查的指导原则](https://github.com/golang/go/wiki/CodeReviewComments)
+- [Go 编码规范](https://golang.org/doc/effective_go.html)
+- [Uber Style Guide](https://github.com/uber-go/guide/blob/master/style.md)
+- [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- [Effective Go](https://golang.org/doc/effective_go.html)
