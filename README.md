@@ -746,26 +746,26 @@ func someOtherHelper() string {
 
 **Don't:**
 
-
+```go
 var w io.Writer = new(bytes.Buffer)
 str := "some string"
 w.Write([]byte(str))
-
+```
 
 **Do:**
 
-
+```go
 var w io.Writer = new(bytes.Buffer)
 str := "some string"
 io.WriteString(w, str)
-
+```
 
 在任何情况下，`io.WriteString` 都可以改善性能，并且至少可以确保以任何方式写入字符串。
 
 ## 使用函数选项
 
 
-
+```go
 func main() {
 	// ...
 	startServer(
@@ -801,7 +801,7 @@ func startServer(opts ...ServerOpt) {
 
 	// ...
 }
-
+```
 
 ## 结构体
 ### 使用命名结构体
@@ -809,28 +809,28 @@ func startServer(opts ...ServerOpt) {
 
 **Don't:**
 
-
+```go
 params := myStruct{
 	1,
 	true,
 }
-
+```
 
 **Do:**
 
-
+```go
 params := myStruct{
 	Foo: 1,
 	Bar: true,
 }
-
+```
 
 ### 避免 new 关键字
 使用正常的语法而不是 `new` 关键字可以更清楚地表达正在发生的事情：创建结构体的新实例 `MyStruct{}` 并使用 `&` 获取指针。
 
 **Don't:**
 
-
+```go
 s := new(MyStruct)
 
 
@@ -838,25 +838,25 @@ s := new(MyStruct)
 
 
 s := &MyStruct{}
-
+```
 
 ### 一致的头部命名
 
 **Don't:**
 
-
+```go
 r.Header.Get("authorization")
 w.Header.Set("Content-type")
 w.Header.Set("content-type")
 w.Header.Set("content-Type")
-
+```
 
 **Do:**
 
-
+```go
 r.Header.Get("Authorization")
 w.Header.Set("Content-Type")
-
+```
 
 保持头部命名的一致性有助于代码的可读性和一致性。
 
@@ -866,41 +866,42 @@ w.Header.Set("Content-Type")
 
 **Don't:**
 
-
+```go
 func IsStrongPassword(password string) bool {
 	return len(password) >= 8
 }
-
+```
 
 **Do:**
 
-
+```go
 const minPasswordLength = 8
 
 func IsStrongPassword(password string) bool {
 	return len(password) >= minPasswordLength
 }
+```
 # 使用指导方针
 
 ## 撰写文档
 
 **不要：
 
-
+```go
 // Add adds two numbers.
 func Add(a, b int) int {
 	return a + b
 }
-
+```
 
 **Do:**
 
-
+```go
 // Add adds two numbers and returns the result.
 func Add(a, b int) int {
 	return a + b
 }
-
+```
 
 为函数、方法和类型编写有意义的注释，解释其功能和预期行为。
 
@@ -908,7 +909,7 @@ func Add(a, b int) int {
 
 **Don't:**
 
-
+```go
 func ReadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -923,11 +924,11 @@ func ReadFile(filename string) ([]byte, error) {
 
 	return data, nil
 }
-
+```
 
 **Do:**
 
-
+```go
 func ReadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -942,7 +943,7 @@ func ReadFile(filename string) ([]byte, error) {
 
 	return data, nil
 }
-
+```
 
 使用 `fmt.Errorf` 函数将错误与自定义消息结合，以提供更多上下文信息。
 
@@ -950,7 +951,7 @@ func ReadFile(filename string) ([]byte, error) {
 
 **Don't:**
 
-
+```go
 type Counter struct {
 	count int
 	mu    sync.Mutex
@@ -967,11 +968,11 @@ func (c *Counter) Count() int {
 	defer c.mu.Unlock()
 	return c.count
 }
-
+```
 
 **Do:**
 
-
+```go
 type Counter struct {
 	count int
 	mu    sync.Mutex
@@ -988,7 +989,7 @@ func (c *Counter) Count() int {
 	defer c.mu.Unlock()
 	return c.count
 }
-
+```
 
 在并发调用时，使用互斥锁（Mutex）来保护共享数据的访问。
 
@@ -996,7 +997,7 @@ func (c *Counter) Count() int {
 
 **Don't:**
 
-
+```go
 var ErrNotFound = errors.New("not found")
 
 func GetUser(id int) (*User, error) {
@@ -1009,11 +1010,11 @@ func GetUser(id int) (*User, error) {
 	}
 	return user, nil
 }
-
+```
 
 **Do:**
 
-
+```go
 var (
 	ErrNotFound = errors.New("not found")
 )
@@ -1028,7 +1029,7 @@ func GetUser(id int) (*User, error) {
 	}
 	return user, nil
 }
-
+```
 
 定义应用程序自己的错误类型，以便可以根据错误类型采取相应的操作或进行特定的错误处理。
 
@@ -1036,7 +1037,7 @@ func GetUser(id int) (*User, error) {
 
 **Don't:**
 
-
+```go
 func WriteToFile(data []byte) error {
 	file, err := os.Create("/path/to/file")
 	if err != nil {
@@ -1047,11 +1048,11 @@ func WriteToFile(data []byte) error {
 	_, err = file.Write(data)
 	return err
 }
-
+```
 
 **Do:**
 
-
+```go
 func WriteToFile(data []byte) error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -1072,7 +1073,7 @@ func WriteToFile(data []byte) error {
 
 	return nil
 }
-
+```
 
 使用 `filepath.Join` 来构建具有可移植性的文件路径，避免在不同操作系统上使用硬编码的路径。
 
@@ -1080,17 +1081,17 @@ func WriteToFile(data []byte) error {
 
 **Don't:**
 
-
+```go
 func DoSomething() error {
 	log.Println("doing something")
 	// do something
 	return nil
 }
-
+```
 
 **Do:**
 
-
+```go
 var logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 func DoSomething() error {
@@ -1098,7 +1099,7 @@ func DoSomething() error {
 	// do something
 	return nil
 }
-
+```
 
 在整个应用程序中使用单个 logger 对象，并将其传递给需要记录日志的函数。
 
@@ -1106,21 +1107,21 @@ func DoSomething() error {
 
 **Don't:**
 
-
+```go
 var a = 1
 var b = true
 var c = "hello"
-
+```
 
 **Do:**
 
-
+```go
 var (
 	a = 1
 	b = true
 	c = "hello"
 )
-
+```
 
 将变量的声明和赋值组合在一起，并声明自定义的声明块以提高可读性。
 
@@ -1128,23 +1129,23 @@ var (
 
 **Don't:**
 
-
+```go
 import (
 	"fmt"
 	"os"
 	"time"
 )
-
+```
 
 **Do:**
 
-
+```go
 import (
 	"fmt"
 	"os"
 	stdtime "time"
 )
-
+```
 
 重命名导入的包，以避免名称冲突或增加代码的可读性。
 
@@ -1152,7 +1153,7 @@ import (
 
 **Don't:**
 
-
+```go
 func OpenFile(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -1162,11 +1163,11 @@ func OpenFile(filename string) error {
 	// do something with file
 	return nil
 }
-
+```
 
 **Do:**
 
-
+```go
 func OpenFile(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -1176,7 +1177,7 @@ func OpenFile(filename string) error {
 	// do something with file
 	return nil
 }
-
+```
 
 在处理错误时，始终使用 `fmt.Errorf` 来返回带有上下文信息的错误。
 
@@ -1184,7 +1185,7 @@ func OpenFile(filename string) error {
 
 **Don't:**
 
-
+```go
 func Foo() (err error) {
 	defer func() {
 		if err != nil {
@@ -1197,11 +1198,11 @@ func Foo() (err error) {
 	// do something
 	return
 }
-
+```
 
 **Do:**
 
-
+```go
 func Foo() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1211,7 +1212,7 @@ func Foo() (err error) {
 	// do something
 	return
 }
-
+```
 
 仅使用 `recover()` 在解决错误时设置错误变量。不要在延迟函数中使用 `return`，以避免 possible bugs。
 
@@ -1219,21 +1220,21 @@ func Foo() (err error) {
 
 **Don't:**
 
-
+```go
 func Calculate(a, b int) (int, error) {
 	// calculate result
 	return result, nil
 }
-
+```
 
 **Do:**
 
-
+```go
 func Calculate(a, b int) (result int, err error) {
 	// calculate result
 	return result nil
 }
-
+```
 
 为函数的返回值命名，以提高代码的可读性和可理解性。
 
@@ -1252,21 +1253,21 @@ func Calculate(a, b int) (result int, err error) {
 
 **Don't:**
 
-
+```go
 // Add adds two numbers.
 func Add(a, b int) int {
 	return a + b
 }
-
+```
 
 **Do:**
 
-
+```go
 // Add adds two numbers and returns the result.
 func Add(a, b int) int {
 	return a + b
 }
-
+```
 
 确保注释与代码保持同步，并提供准确的文档和注释。及时更新注释，以反映代码的更改。
 
