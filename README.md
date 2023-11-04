@@ -745,8 +745,7 @@ func someOtherHelper() string {
 满足 `io.Writer` 的一些重要类型也有一个 `WriteString` 方法，包括 `*bytes.Buffer`、`*os.File` 和 `*bufio.Writer`。`WriteString` 是与期望写字符串到缓冲区中的方法，可以提高性能，并确保字符串将以任何方式被写入。
 
 **Don't:**
-go
-复制
+
 
 var w io.Writer = new(bytes.Buffer)
 str := "some string"
@@ -754,8 +753,7 @@ w.Write([]byte(str))
 
 
 **Do:**
-go
-复制
+
 
 var w io.Writer = new(bytes.Buffer)
 str := "some string"
@@ -766,8 +764,7 @@ io.WriteString(w, str)
 
 ## 使用函数选项
 
-go
-复制
+
 
 func main() {
 	// ...
@@ -811,8 +808,7 @@ func startServer(opts ...ServerOpt) {
 如果一个结构体有多个字段，实例化时包含字段名称。
 
 **Don't:**
-go
-复制
+
 
 params := myStruct{
 	1,
@@ -821,8 +817,7 @@ params := myStruct{
 
 
 **Do:**
-go
-复制
+
 
 params := myStruct{
 	Foo: 1,
@@ -834,15 +829,13 @@ params := myStruct{
 使用正常的语法而不是 `new` 关键字可以更清楚地表达正在发生的事情：创建结构体的新实例 `MyStruct{}` 并使用 `&` 获取指针。
 
 **Don't:**
-go
-复制
+
 
 s := new(MyStruct)
 
 
 **Do:**
-go
-复制
+
 
 s := &MyStruct{}
 
@@ -850,8 +843,7 @@ s := &MyStruct{}
 ### 一致的头部命名
 
 **Don't:**
-go
-复制
+
 
 r.Header.Get("authorization")
 w.Header.Set("Content-type")
@@ -860,8 +852,7 @@ w.Header.Set("content-Type")
 
 
 **Do:**
-go
-复制
+
 
 r.Header.Get("Authorization")
 w.Header.Set("Content-Type")
@@ -874,8 +865,7 @@ w.Header.Set("Content-Type")
 没有名称和上下文的数字只是一个随机值。在代码中避免使用它们（例外情况可能是数字0，例如在创建循环时）。
 
 **Don't:**
-go
-复制
+
 
 func IsStrongPassword(password string) bool {
 	return len(password) >= 8
@@ -883,8 +873,7 @@ func IsStrongPassword(password string) bool {
 
 
 **Do:**
-go
-复制
+
 
 const minPasswordLength = 8
 
@@ -896,8 +885,7 @@ func IsStrongPassword(password string) bool {
 ## 撰写文档
 
 **不要：
-go
-复制
+
 
 // Add adds two numbers.
 func Add(a, b int) int {
@@ -906,8 +894,7 @@ func Add(a, b int) int {
 
 
 **Do:**
-go
-复制
+
 
 // Add adds two numbers and returns the result.
 func Add(a, b int) int {
@@ -920,8 +907,7 @@ func Add(a, b int) int {
 ## 处理错误
 
 **Don't:**
-go
-复制
+
 
 func ReadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
@@ -940,8 +926,7 @@ func ReadFile(filename string) ([]byte, error) {
 
 
 **Do:**
-go
-复制
+
 
 func ReadFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
@@ -964,8 +949,7 @@ func ReadFile(filename string) ([]byte, error) {
 ## 并发安全
 
 **Don't:**
-go
-复制
+
 
 type Counter struct {
 	count int
@@ -986,8 +970,7 @@ func (c *Counter) Count() int {
 
 
 **Do:**
-go
-复制
+
 
 type Counter struct {
 	count int
@@ -1012,8 +995,7 @@ func (c *Counter) Count() int {
 ## 错误类型
 
 **Don't:**
-go
-复制
+
 
 var ErrNotFound = errors.New("not found")
 
@@ -1030,8 +1012,7 @@ func GetUser(id int) (*User, error) {
 
 
 **Do:**
-go
-复制
+
 
 var (
 	ErrNotFound = errors.New("not found")
@@ -1054,8 +1035,7 @@ func GetUser(id int) (*User, error) {
 ## 文件和目录路径
 
 **Don't:**
-go
-复制
+
 
 func WriteToFile(data []byte) error {
 	file, err := os.Create("/path/to/file")
@@ -1070,8 +1050,7 @@ func WriteToFile(data []byte) error {
 
 
 **Do:**
-go
-复制
+
 
 func WriteToFile(data []byte) error {
 	homeDir, err := os.UserHomeDir()
@@ -1100,8 +1079,7 @@ func WriteToFile(data []byte) error {
 ## 日志记录
 
 **Don't:**
-go
-复制
+
 
 func DoSomething() error {
 	log.Println("doing something")
@@ -1111,8 +1089,7 @@ func DoSomething() error {
 
 
 **Do:**
-go
-复制
+
 
 var logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
@@ -1128,8 +1105,7 @@ func DoSomething() error {
 ## 变量赋值
 
 **Don't:**
-go
-复制
+
 
 var a = 1
 var b = true
@@ -1137,8 +1113,7 @@ var c = "hello"
 
 
 **Do:**
-go
-复制
+
 
 var (
 	a = 1
@@ -1152,8 +1127,7 @@ var (
 ## 重命名包导入
 
 **Don't:**
-go
-复制
+
 
 import (
 	"fmt"
@@ -1163,8 +1137,7 @@ import (
 
 
 **Do:**
-go
-复制
+
 
 import (
 	"fmt"
@@ -1178,8 +1151,7 @@ import (
 ## 错误处理
 
 **Don't:**
-go
-复制
+
 
 func OpenFile(filename string) error {
 	file, err := os.Open(filename)
@@ -1193,8 +1165,7 @@ func OpenFile(filename string) error {
 
 
 **Do:**
-go
-复制
+
 
 func OpenFile(filename string) error {
 	file, err := os.Open(filename)
@@ -1212,8 +1183,7 @@ func OpenFile(filename string) error {
 ## 延迟函数调用与错误
 
 **Don't:**
-go
-复制
+
 
 func Foo() (err error) {
 	defer func() {
@@ -1230,8 +1200,7 @@ func Foo() (err error) {
 
 
 **Do:**
-go
-复制
+
 
 func Foo() (err error) {
 	defer func() {
@@ -1249,8 +1218,7 @@ func Foo() (err error) {
 ## 函数返回值的命名
 
 **Don't:**
-go
-复制
+
 
 func Calculate(a, b int) (int, error) {
 	// calculate result
@@ -1259,8 +1227,7 @@ func Calculate(a, b int) (int, error) {
 
 
 **Do:**
-go
-复制
+
 
 func Calculate(a, b int) (result int, err error) {
 	// calculate result
@@ -1284,8 +1251,7 @@ func Calculate(a, b int) (result int, err error) {
 ## 注释与代码同步
 
 **Don't:**
-go
-复制
+
 
 // Add adds two numbers.
 func Add(a, b int) int {
@@ -1294,8 +1260,7 @@ func Add(a, b int) int {
 
 
 **Do:**
-go
-复制
+
 
 // Add adds two numbers and returns the result.
 func Add(a, b int) int {
